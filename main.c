@@ -5,7 +5,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "client.h"
+#include "shell.h"
 
 #define MAX_MESSAGE_SIZE 1024
 #define PORT 8080
