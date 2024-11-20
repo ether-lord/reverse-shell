@@ -5,6 +5,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include "client.h"
+
 #define MAX_MESSAGE_SIZE 1024
 #define PORT 8080
 
@@ -40,8 +42,7 @@ int main(void) {
 
     char status = 0;
     write(connection_file_descriptor, &status, 1);
-    send(connection_file_descriptor, "net>", 4, 0);
-    
+    send(connection_file_descriptor, ">", 1, 0);
   }
 
   close(socket_file_descriptor);
