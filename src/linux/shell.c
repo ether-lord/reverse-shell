@@ -1,15 +1,18 @@
 #include "shell.h"
 
+#include <arpa/inet.h>
 #include <netinet/in.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <arpa/inet.h>
 
-#define PORT 8080
+#define PORT 8081
 
+static char buffer[BUFFER_SIZE];
+
+static int buffer_size;
 static int socket_fd;
 static int connection_fd;
 
@@ -44,20 +47,30 @@ int shell_init(void) {
   inet_ntop(AF_INET, &(client_sockaddr_in.sin_addr), connection_ip_str,
             INET_ADDRSTRLEN);
 
-  const char* new_connection_str = "New connection from: ";
-  write(connection_fd, new_connection_str, strlen(new_connection_str));
-  write(connection_fd, connection_ip_str, strlen(connection_ip_str));
-  write(connection_fd, "\n", 1);
   write(connection_fd, ">", 1);
 
   return connection_fd;
 }
 
-int shell_get_socket_fd(void) { return socket_fd; }
+int shell_recieve(void) {
+  buffer_size = recv(connection_fd, buffer, sizeof(buffer), 0);
+  return buffer_size;
+}
+
+int shell_handle_input(void) { 
+  if (strncmp(buffer, "quit", buffer_size - 1) == 0)
+      return QUIT;
+  else
+    return UNKNOWN;
+}
 
 void shell_shutdown_connection(void) {
-  const char* connection_shutdown_msg = "Shuting down the connection\n";
-  write(connection_fd, connection_shutdown_msg, strlen(connection_shutdown_msg));
+  const char *connection_shutdown_msg = "Shuting down the connection\n";
+  write(connection_fd, connection_shutdown_msg,
+        strlen(connection_shutdown_msg));
   close(socket_fd);
+  close(connection_fd);
   shutdown(socket_fd, SHUT_RDWR);
 }
+
+const char *shell_get_buffer(void) { return buffer; }

@@ -11,16 +11,24 @@ int main(void) {
   int connection_fd = shell_init();
   if (connection_fd == -1) return -1;
 
-  char buffer[MAX_MESSAGE_SIZE];
-
   while (1) {
-    int buffer_len = recv(connection_fd, buffer, sizeof(buffer), 0);
-    if (buffer_len == 0 || buffer[0] == '\n') continue;
-    printf("%.*s", buffer_len, buffer);
+    int bytes_received = shell_recieve();
+    const char* buffer = shell_get_buffer();
 
-    if (strncmp(buffer, "quit", buffer_len - 1) == 0) {
-      shell_shutdown_connection();
-      break;
+    if (bytes_received == 0 || buffer[0] == '\n') continue;
+    printf("%.*s", bytes_received, buffer);
+
+    EShellCommands shell_command = shell_handle_input();
+
+    switch (shell_command) {
+      case UNKNOWN:
+        break;
+      case QUIT:
+        shell_shutdown_connection();
+        return 0;
+        break;
+      default:
+        break;
     }
 
     char status = 0;
