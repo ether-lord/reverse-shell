@@ -1,5 +1,13 @@
 #include "shell.h"
 
+#include <netinet/in.h>
+#include <stdio.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <arpa/inet.h>
+
 #define PORT 8080
 
 static int socket_fd;
@@ -18,7 +26,13 @@ int shell_init(void) {
   int bind_result = bind(socket_fd, (struct sockaddr *)&server_sockaddr_in,
                          sizeof(server_sockaddr_in));
 
-  listen(socket_fd, 5);
+  if (bind_result != 0) {
+    perror("bind() failed");
+    close(socket_fd);
+    return -1;
+  }
+
+  listen(socket_fd, 10);
 
   struct sockaddr_in client_sockaddr_in;
   socklen_t len = sizeof(client_sockaddr_in);
@@ -40,3 +54,10 @@ int shell_init(void) {
 }
 
 int shell_get_socket_fd(void) { return socket_fd; }
+
+void shell_shutdown_connection(void) {
+  const char* connection_shutdown_msg = "Shuting down the connection\n";
+  write(connection_fd, connection_shutdown_msg, strlen(connection_shutdown_msg));
+  close(socket_fd);
+  shutdown(socket_fd, SHUT_RDWR);
+}

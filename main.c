@@ -1,4 +1,7 @@
+#include <stdio.h>
 #include <string.h>
+#include <sys/socket.h>
+#include <unistd.h>
 
 #include "shell.h"
 
@@ -6,17 +9,17 @@
 
 int main(void) {
   int connection_fd = shell_init();
+  if (connection_fd == -1) return -1;
 
   char buffer[MAX_MESSAGE_SIZE];
 
   while (1) {
-    int buffer_len =
-        recv(connection_fd, buffer, sizeof(buffer), 0);
+    int buffer_len = recv(connection_fd, buffer, sizeof(buffer), 0);
     if (buffer_len == 0 || buffer[0] == '\n') continue;
     printf("%.*s", buffer_len, buffer);
 
-    if (strstr(buffer, "q") != NULL) {
-      close(shell_get_socket_fd());
+    if (strncmp(buffer, "quit", buffer_len - 1) == 0) {
+      shell_shutdown_connection();
       break;
     }
 
