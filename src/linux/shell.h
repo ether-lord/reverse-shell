@@ -8,7 +8,7 @@ typedef enum ShellCommands {
   QUIT = 0
 } EShellCommands;
 
-int shell_init(void);
+int shell_init(int port);
 int shell_recieve(void);
 int shell_handle_input(void);
 

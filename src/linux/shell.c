@@ -16,13 +16,12 @@ static int buffer_size;
 static int socket_fd;
 static int connection_fd;
 
-int shell_init(void) {
+int shell_init(int port) {
   struct sockaddr_in server_sockaddr_in;
 
   server_sockaddr_in.sin_family = AF_INET;
   server_sockaddr_in.sin_addr.s_addr = htonl(INADDR_ANY);
 
-  const int port = PORT;
   server_sockaddr_in.sin_port = htons(port);
 
   socket_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -68,9 +67,8 @@ void shell_shutdown_connection(void) {
   const char *connection_shutdown_msg = "Shuting down the connection\n";
   write(connection_fd, connection_shutdown_msg,
         strlen(connection_shutdown_msg));
-  close(socket_fd);
   close(connection_fd);
-  shutdown(socket_fd, SHUT_RDWR);
+  shutdown(connection_fd, SHUT_RDWR);
 }
 
 const char *shell_get_buffer(void) { return buffer; }
